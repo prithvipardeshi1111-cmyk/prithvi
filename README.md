@@ -1,0 +1,2 @@
+# prithvi
+Bayes-Visualizer
