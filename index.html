@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Bayes Graphs (by Prithvi)</title>
-<h1 align="center">PS Visualization By Prithvi</h1>
+    <h1 align="center">PS Visualization By Prithvi</h1>
     <style>
         :root { --p-blue: #3498db; --p-orange: #f39c12; --p-green: #2ecc71; --p-red: #e74c3c; --dark: #2c3e50; --light: #f4f7f6; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--light); margin: 0; padding: 20px; color: var(--dark); }
@@ -24,9 +24,16 @@
         .tab-btn { padding: 12px 25px; border: none; background: #bdc3c7; border-radius: 25px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .tab-btn.active { background: var(--p-blue); color: white; transform: scale(1.1); }
 
-        /* View Content */
-        .view-content { display: none; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); min-height: 500px; position: relative; overflow: hidden; }
-        .view-content.active { display: block; animation: fadeIn 0.5s; }
+        /* View Content - Flex Layout for Side-by-Side */
+        .view-content { display: none; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); min-height: 500px; position: relative; overflow: hidden; }
+        .view-content.active { display: flex; flex-direction: row; align-items: center; justify-content: space-around; animation: fadeIn 0.5s; }
+
+        .viz-side { flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .formula-side { flex: 0.8; padding: 25px; background: #f8f9fa; border-left: 6px solid var(--p-blue); border-radius: 0 15px 15px 0; margin-left: 20px; }
+
+        /* Large Formula Style */
+        .formula-text { font-family: 'Times New Roman', Times, serif; font-size: 24px; font-weight: bold; line-height: 1.6; color: #333; }
+        .math-box { background: white; padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
 
         /* Area Map Styles */
         .area-box { position: relative; width: 400px; height: 400px; border: 3px solid #333; margin: auto; }
@@ -35,23 +42,28 @@
         .box-fp { position: absolute; bottom: 0; background: var(--p-orange); transition: 0.3s; border: 1px solid #222; }
 
         /* Tree Styles */
-        .tree-container { position: relative; width: 600px; height: 400px; margin: auto; }
+        .tree-container { position: relative; width: 550px; height: 400px; margin: auto; }
         .node { position: absolute; padding: 10px; border-radius: 8px; background: #ecf0f1; border: 2px solid var(--dark); font-weight: bold; font-size: 14px; text-align: center; z-index: 2; }
         .line { position: absolute; background: #7f8c8d; height: 2px; transform-origin: left center; z-index: 1; transition: 0.3s; }
 
         /* Bar Styles */
-        .bar-wrap { width: 80%; height: 70px; background: #eee; margin: 60px auto; border-radius: 35px; display: flex; overflow: hidden; border: 3px solid #ddd; }
+        .bar-wrap { width: 90%; height: 80px; background: #eee; margin: 20px auto; border-radius: 40px; display: flex; overflow: hidden; border: 3px solid #ddd; }
         .segment { height: 100%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px; }
 
         /* Venn Styles */
-        .venn-container { position: relative; width: 500px; height: 400px; margin: auto; }
+        .venn-container { position: relative; width: 450px; height: 400px; margin: auto; }
         .venn-circle { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; transition: 0.5s; opacity: 0.7; }
 
-        /* Continuous PDF Styles (Updated) */
-        .pdf-axis { width: 90%; height: 350px; border-bottom: 3px solid #333; border-left: 3px solid #333; margin: 20px auto; position: relative; overflow: hidden; }
-        .curve { position: absolute; bottom: 0; border-radius: 50% 50% 0 0; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); border: 3px solid; transform: translateX(-50%); }
+        /* PDF Styles */
+        .pdf-axis { width: 100%; height: 350px; border-bottom: 3px solid #333; border-left: 3px solid #333; margin: 20px auto; position: relative; overflow: hidden; }
+        .curve { position: absolute; bottom: 0; border-radius: 50% 50% 0 0; transition: all 0.5s; border: 3px solid; transform: translateX(-50%); }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Table Styles */
+        .tech-table { width: 100%; border-collapse: collapse; margin-top: 30px; background: white; border-radius: 8px; overflow: hidden; }
+        .tech-table th, .tech-table td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        .tech-table th { background: var(--dark); color: white; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .result-tag { font-size: 32px; text-align: center; margin-top: 20px; color: var(--p-blue); font-weight: bold; }
     </style>
 </head>
@@ -84,47 +96,115 @@
     </div>
 
     <div id="view-area" class="view-content active">
-        <h3 style="text-align:center;">Area Map: Probability as Space</h3>
-        <div class="area-box">
-            <div id="colA" class="col-a"></div>
-            <div id="boxTP" class="box-tp"></div>
-            <div id="boxFP" class="box-fp"></div>
+        <div class="viz-side">
+            <h3>Area Map: Probability as Space</h3>
+            <div class="area-box">
+                <div id="colA" class="col-a"></div>
+                <div id="boxTP" class="box-tp"></div>
+                <div id="boxFP" class="box-fp"></div>
+            </div>
         </div>
-        <p style="text-align:center;">Posterior = Blue Area / (Blue Area + Orange Area)</p>
+        <div class="formula-side">
+            <div class="formula-text">Discrete Bayes' Theorem:</div>
+            <div class="math-box">
+                <div style="font-size: 32px; text-align: center; margin: 10px 0;">
+                    P(A|B) = <span style="border-bottom: 2px solid #333; padding-bottom: 2px;">P(B|A) × P(A)</span><br>
+                    <span style="display: block; margin-top: 5px;">P(B)</span>
+                </div>
+            </div>
+            <p>Posterior = Blue Area / Total Highlighted Area</p>
+        </div>
     </div>
 
     <div id="view-tree" class="view-content">
-        <h3 style="text-align:center;">Sequential Logic Tree</h3>
-        <div class="tree-container" id="tree"></div>
+        <div class="viz-side">
+            <h3>Sequential Logic Tree</h3>
+            <div class="tree-container" id="tree"></div>
+        </div>
+        <div class="formula-side">
+            <div class="formula-text">Law of Total Probability:</div>
+            <div class="math-box">
+                <div style="font-size: 26px; text-align: center;">
+                    P(B) = P(B|A)P(A) + P(B|¬A)P(¬A)
+                </div>
+            </div>
+            <p>This calculates the "Evidence" denominator used to scale the result.</p>
+        </div>
     </div>
 
     <div id="view-evidence" class="view-content">
-        <h3 style="text-align:center;">The Evidence Bar</h3>
-        <div class="bar-wrap">
-            <div id="segTP" class="segment" style="background:var(--p-green)">True Pos</div>
-            <div id="segFP" class="segment" style="background:var(--p-red)">False Pos</div>
+        <div class="viz-side">
+            <h3>The Evidence Bar</h3>
+            <div class="bar-wrap">
+                <div id="segTP" class="segment" style="background:var(--p-green)">True Pos</div>
+                <div id="segFP" class="segment" style="background:var(--p-red)">False Pos</div>
+            </div>
+        </div>
+        <div class="formula-side">
+            <div class="formula-text">Evidence Ratio:</div>
+            <div class="math-box">
+                <div style="font-size: 26px; text-align: center;">
+                    Posterior = <span style="color:var(--p-green)">TP</span> / (<span style="color:var(--p-green)">TP</span> + <span style="color:var(--p-red)">FP</span>)
+                </div>
+            </div>
+            <p>Visualizes the probability as a ratio of "True Alarms" to "Total Alarms".</p>
         </div>
     </div>
 
     <div id="view-venn" class="view-content">
-        <h3 style="text-align:center;">Set Intersection</h3>
-        <div class="venn-container">
-            <div id="vennA" class="venn-circle" style="background: var(--p-blue);">A</div>
-            <div id="vennB" class="venn-circle" style="background: var(--p-red);">B</div>
+        <div class="viz-side">
+            <h3>Set Intersection</h3>
+            <div class="venn-container">
+                <div id="vennA" class="venn-circle" style="background: var(--p-blue);">A</div>
+                <div id="vennB" class="venn-circle" style="background: var(--p-red);">B</div>
+            </div>
+        </div>
+        <div class="formula-side">
+            <div class="formula-text">Intersection Rule:</div>
+            <div class="math-box">
+                <div style="font-size: 28px; text-align: center;">
+                    P(A ∩ B) = P(B|A) × P(A)
+                </div>
+            </div>
+            <p>The overlap represents where both the hypothesis and the evidence are true.</p>
         </div>
     </div>
 
     <div id="view-pdf" class="view-content">
-        <h3 style="text-align:center;">Continuous Bayesian Inference (Triple Curve)</h3>
-        <div class="pdf-axis">
-            <div id="pdfPrior" class="curve" style="border-color: var(--p-blue); opacity: 0.4;"></div>
-            <div id="pdfLikelihood" class="curve" style="border-color: var(--p-orange); border-style: dashed; opacity: 0.4;"></div>
-            <div id="pdfPost" class="curve" style="border-color: var(--p-green); background: rgba(46, 204, 113, 0.2); z-index: 5;"></div>
+        <div class="viz-side">
+            <h3>Continuous Inference</h3>
+            <div class="pdf-axis">
+                <div id="pdfPrior" class="curve" style="border-color: var(--p-blue); opacity: 0.4;"></div>
+                <div id="pdfLikelihood" class="curve" style="border-color: var(--p-orange); border-style: dashed; opacity: 0.4;"></div>
+                <div id="pdfPost" class="curve" style="border-color: var(--p-green); background: rgba(46, 204, 113, 0.2); z-index: 5;"></div>
+            </div>
         </div>
-        <p style="text-align:center;"><b>Blue:</b> Prior (Belief) | <b>Orange:</b> Likelihood (Data) | <b>Green:</b> Posterior (Updated)</p>
+        <div class="formula-side">
+            <div class="formula-text">Continuous Bayes' Function:</div>
+            <div class="math-box">
+                <div style="font-size: 28px; text-align: center;">
+                    f(θ|x) = <span style="border-bottom: 2px solid #333;">f(x|θ) × f(θ)</span><br>
+                    <span style="display: block; margin-top: 5px;">∫ f(x|θ)f(θ) dθ</span>
+                </div>
+            </div>
+            <p>θ = Parameter (State), x = Evidence (Data)</p>
+        </div>
     </div>
 
     <div class="result-tag" id="resText">Posterior P(A|B): 50.0%</div>
+
+    <table class="tech-table">
+        <thead>
+            <tr><th>Variable</th><th>Term</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>θ</td><td>Parameter</td><td>The "True State" (e.g., Earthquake Magnitude).</td></tr>
+            <tr><td>x</td><td>Evidence</td><td>The "Observation" (e.g., Sensor Display).</td></tr>
+            <tr><td>f(θ | x)</td><td>Posterior</td><td><b>Green Curve</b> - Belief after seeing data.</td></tr>
+            <tr><td>f(x | θ)</td><td>Likelihood</td><td><b>Orange Curve</b> - Reliability of sensor.</td></tr>
+            <tr><td>f(θ)</td><td>Prior</td><td><b>Blue Curve</b> - Belief based on history.</td></tr>
+        </tbody>
+    </table>
 </div>
 
 <script>
@@ -150,7 +230,6 @@
         document.getElementById('vBnA').innerText = pBnA.toFixed(2);
         document.getElementById('resText').innerText = `Posterior P(A|B): ${(pAgB * 100).toFixed(1)}%`;
 
-        // 1. Area Map Update
         document.getElementById('colA').style.width = (pA * 400) + "px";
         document.getElementById('boxTP').style.width = (pA * 400) + "px";
         document.getElementById('boxTP').style.height = (pBA * 400) + "px";
@@ -158,54 +237,47 @@
         document.getElementById('boxFP').style.width = (pnA * 400) + "px";
         document.getElementById('boxFP').style.height = (pBnA * 400) + "px";
 
-        // 2. Bar Update
         const tpPer = (pAnB / pB) * 100;
         document.getElementById('segTP').style.width = tpPer + "%";
         document.getElementById('segFP').style.width = (100 - tpPer) + "%";
 
-        // 3. Tree Update
         document.getElementById('tree').innerHTML = `
             <div class="node" style="left:0; top:180px">START</div>
-            <div class="line" style="left:60px; top:195px; width:150px; transform:rotate(-30deg)"></div>
-            <div class="line" style="left:60px; top:205px; width:150px; transform:rotate(30deg)"></div>
-            <div class="node" style="left:180px; top:80px; border-color:var(--p-blue)">A<br>${pA.toFixed(2)}</div>
-            <div class="node" style="left:180px; top:280px; border-color:var(--p-orange)">¬A<br>${pnA.toFixed(2)}</div>
-            <div class="line" style="left:280px; top:105px; width:150px; transform:rotate(-15deg)"></div>
-            <div class="node" style="left:400px; top:40px; background:var(--p-green); color:white">B|A<br>${pAnB.toFixed(3)}</div>
-            <div class="line" style="left:280px; top:305px; width:150px; transform:rotate(-15deg)"></div>
-            <div class="node" style="left:400px; top:240px; background:var(--p-red); color:white">B|¬A<br>${pnAnB.toFixed(3)}</div>
+            <div class="line" style="left:60px; top:195px; width:130px; transform:rotate(-30deg)"></div>
+            <div class="line" style="left:60px; top:205px; width:130px; transform:rotate(30deg)"></div>
+            <div class="node" style="left:160px; top:80px; border-color:var(--p-blue)">A<br>${pA.toFixed(2)}</div>
+            <div class="node" style="left:160px; top:280px; border-color:var(--p-orange)">¬A<br>${pnA.toFixed(2)}</div>
+            <div class="line" style="left:260px; top:105px; width:130px; transform:rotate(-15deg)"></div>
+            <div class="node" style="left:380px; top:40px; background:var(--p-green); color:white">B|A<br>${pAnB.toFixed(3)}</div>
+            <div class="line" style="left:260px; top:305px; width:130px; transform:rotate(-15deg)"></div>
+            <div class="node" style="left:380px; top:240px; background:var(--p-red); color:white">B|¬A<br>${pnAnB.toFixed(3)}</div>
         `;
 
-        // 4. Venn Update
         const sA = Math.sqrt(pA) * 280;
         const sB = Math.sqrt(pB) * 280;
         const vA = document.getElementById('vennA');
         const vB = document.getElementById('vennB');
-        vA.style.width = sA + "px"; vA.style.height = sA + "px"; vA.style.top = (200 - sA/2) + "px"; vA.style.left = (200 - sA/2) + "px";
-        vB.style.width = sB + "px"; vB.style.height = sB + "px"; vB.style.top = (200 - sB/2) + "px"; vB.style.left = (300 - sB/2) + "px";
+        vA.style.width = sA + "px"; vA.style.height = sA + "px"; vA.style.top = (200 - sA/2) + "px"; vA.style.left = (150 - sA/2) + "px";
+        vB.style.width = sB + "px"; vB.style.height = sB + "px"; vB.style.top = (200 - sB/2) + "px"; vB.style.left = (250 - sB/2) + "px";
 
-        // 5. PDF Update (NEW DYNAMIC LOGIC)
-        const pdfPr = document.getElementById('pdfPrior');
-        const pdfLi = document.getElementById('pdfLikelihood');
-        const pdfPo = document.getElementById('pdfPost');
-
-        // Dynamic Prior Curve (Moves with P(A))
         const pWidth = 350 - (pA * 150);
         const pHeight = 80 + (pA * 100);
         const priorPos = 20 + (pA * 60); 
-        pdfPr.style.width = pWidth + "px"; pdfPr.style.height = pHeight + "px"; pdfPr.style.left = priorPos + "%";
+        document.getElementById('pdfPrior').style.width = pWidth + "px"; 
+        document.getElementById('pdfPrior').style.height = pHeight + "px"; 
+        document.getElementById('pdfPrior').style.left = priorPos + "%";
         
-        // Dynamic Likelihood Curve (Moves and changes height with P(B|A))
         const lHeight = 80 + (pBA * 180); 
         const lWidth = 350 - (pBA * 200); 
         const lPos = 20 + (pBA * 60);
-        pdfLi.style.width = lWidth + "px"; pdfLi.style.height = lHeight + "px"; pdfLi.style.left = lPos + "%";
+        document.getElementById('pdfLikelihood').style.width = lWidth + "px"; 
+        document.getElementById('pdfLikelihood').style.height = lHeight + "px"; 
+        document.getElementById('pdfLikelihood').style.left = lPos + "%";
         
-        // Dynamic Posterior (The Result - always sharper/taller)
         const postPos = 20 + (pAgB * 60); 
-        pdfPo.style.width = Math.min(pWidth, lWidth) * 0.7 + "px"; 
-        pdfPo.style.height = Math.max(pHeight, lHeight) + 50 + "px";
-        pdfPo.style.left = postPos + "%";
+        document.getElementById('pdfPost').style.width = Math.min(pWidth, lWidth) * 0.7 + "px"; 
+        document.getElementById('pdfPost').style.height = Math.max(pHeight, lHeight) + 50 + "px";
+        document.getElementById('pdfPost').style.left = postPos + "%";
     }
 
     document.querySelectorAll('input').forEach(i => i.addEventListener('input', update));
